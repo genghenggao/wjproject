@@ -20,20 +20,23 @@
 </template>
 
 <script>
+import { reactive, toRefs, getCurrentInstance, onMounted } from "vue";
 export default {
   name: "DigitalFlop",
-  data() {
-    return {
+  setup() {
+    let { proxy } = getCurrentInstance();
+    const state = reactive({
       digitalFlopData: [],
-    };
-  },
-  methods: {
-    createData() {
-      const { randomExtend } = this;
+    });
 
-      this.digitalFlopData = [
+    onMounted(() => {
+      createData_pre();
+      setTimeout(createData, 500);
+    });
+    const createData_pre = () => {
+      state.digitalFlopData = [
         {
-          title: "平台总量",
+          title: "平台设计容量",
           number: {
             number: [randomExtend(100, 200)],
             content: "{nt}",
@@ -46,7 +49,7 @@ export default {
           unit: "GB",
         },
         {
-          title: "报表数据",
+          title: "总数据量",
           number: {
             number: [randomExtend(20, 50)],
             content: "{nt}",
@@ -59,7 +62,7 @@ export default {
           unit: "GB",
         },
         {
-          title: "图数据",
+          title: "图纸数据",
           number: {
             number: [randomExtend(20, 30)],
             content: "{nt}",
@@ -85,48 +88,9 @@ export default {
           unit: "GB",
         },
         {
-          title: "采矿数据",
+          title: "报表数据",
           number: {
             number: [randomExtend(10, 20)],
-            content: "{nt}",
-            textAlign: "right",
-            style: {
-              fill: "#f46827",
-              fontWeight: "bold",
-            },
-          },
-          unit: "GB",
-        },
-        {
-          title: "地质数据",
-          number: {
-            number: [randomExtend(20, 40)],
-            content: "{nt}",
-            textAlign: "right",
-            style: {
-              fill: "#40faee",
-              fontWeight: "bold",
-            },
-          },
-          unit: "GB",
-        },
-        {
-          title: "测量数据",
-          number: {
-            number: [randomExtend(10, 20)],
-            content: "{nt}",
-            textAlign: "right",
-            style: {
-              fill: "#4d99fc",
-              fontWeight: "bold",
-            },
-          },
-          unit: "GB",
-        },
-        {
-          title: "安全数据",
-          number: {
-            number: [randomExtend(10, 30)],
             content: "{nt}",
             textAlign: "right",
             style: {
@@ -139,7 +103,7 @@ export default {
         {
           title: "其他数据",
           number: {
-            number: [randomExtend(20, 50)],
+            number: [randomExtend(20, 40)],
             content: "{nt}",
             textAlign: "right",
             style: {
@@ -150,21 +114,120 @@ export default {
           unit: "GB",
         },
       ];
-    },
-    randomExtend(minNum, maxNum) {
+    };
+    const createData = () => {
+      // 获取数据库信息
+      let url = `/api/wjproject/databaseinfo/`;
+      // console.log(proxy.$axios);
+      proxy.$axios
+        .get(url)
+        .then((res) => {
+          console.log(res.data);
+          // console.log(data.data.list);
+          if (res.data != null) {
+            const dataview_tmp = res.data.dataview;
+            const datatop_tmp = res.data.datatop;
+            state.digitalFlopData = [
+              {
+                title: "平台设计容量",
+                number: {
+                  number: [datatop_tmp["fsTotalSize"] / 1024],
+                  content: "{nt}",
+                  textAlign: "right",
+                  style: {
+                    fill: "#4d99fc",
+                    fontWeight: "bold",
+                  },
+                },
+                unit: "GB",
+              },
+              {
+                title: "总数据量",
+                number: {
+                  number: [datatop_tmp["dataSize"]],
+                  content: "{nt}",
+                  textAlign: "right",
+                  style: {
+                    fill: "#f46827",
+                    fontWeight: "bold",
+                  },
+                },
+                unit: "MB",
+              },
+              {
+                title: "图纸数据",
+                number: {
+                  number: [dataview_tmp[0]["filesize"]],
+                  content: "{nt}",
+                  textAlign: "right",
+                  style: {
+                    fill: "#40faee",
+                    fontWeight: "bold",
+                  },
+                },
+                unit: "MB",
+              },
+              {
+                title: "文字报告",
+                number: {
+                  number: [dataview_tmp[1]["filesize"]],
+                  content: "{nt}",
+                  textAlign: "right",
+                  style: {
+                    fill: "#4d99fc",
+                    fontWeight: "bold",
+                  },
+                },
+                unit: "MB",
+              },
+              {
+                title: "报表数据",
+                number: {
+                  number: [dataview_tmp[2]["filesize"]],
+                  content: "{nt}",
+                  textAlign: "right",
+                  style: {
+                    fill: "#f46827",
+                    fontWeight: "bold",
+                  },
+                },
+                unit: "MB",
+              },
+              {
+                title: "其他数据",
+                number: {
+                  number: [datatop_tmp["fsUsedSize"] / 1024],
+                  content: "{nt}",
+                  textAlign: "right",
+                  style: {
+                    fill: "#40faee",
+                    fontWeight: "bold",
+                  },
+                },
+                unit: "GB",
+              },
+            ];
+          }
+        })
+        .catch((errot) => {
+          console.log("网络错误");
+        });
+    };
+
+    const randomExtend = (minNum, maxNum) => {
       if (arguments.length === 1) {
         return parseInt(Math.random() * minNum + 1, 10);
       } else {
         return parseInt(Math.random() * (maxNum - minNum + 1) + minNum, 10);
       }
-    },
-  },
-  mounted() {
-    const { createData } = this;
+    };
 
-    createData();
-
-    setInterval(createData, 30000);
+    return {
+      ...toRefs(state),
+      createData_pre,
+      createData,
+      randomExtend,
+    };
   },
 };
 </script>

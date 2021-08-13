@@ -4,7 +4,7 @@
  * @Author: henggao
  * @Date: 2021-07-17 21:31:46
  * @LastEditors: henggao
- * @LastEditTime: 2021-07-30 17:33:15
+ * @LastEditTime: 2021-08-09 17:12:52
 -->
 <template>
   <div class="data-info">
@@ -18,7 +18,19 @@
       </template>
 
       <div class="maincontent">
-        <section>
+        <el-row>
+          <el-col>
+            <el-button type="primary" plain @click="preBtn">上一条</el-button>
+            <el-button type="primary" plain @click="nextBtn">下一条</el-button>
+            <el-button
+              type="danger"
+              plain
+              @click="printJS('printJS-form', 'html')"
+              >打印</el-button
+            >
+          </el-col>
+        </el-row>
+        <section id="printJS-form">
           <el-table
             :show-header="false"
             :data="tableData"
@@ -101,10 +113,6 @@
           </el-drawer>
         </section>
       </div>
-      <el-form-item style="padding-top: 5px; padding-left: 700px">
-        <el-button type="info" plain @click="preBtn">上一条</el-button>
-        <el-button type="info" plain @click="nextBtn">下一条</el-button>
-      </el-form-item>
     </el-card>
   </div>
 </template>
@@ -115,11 +123,16 @@ import { useRouter } from "vue-router";
 import { ElMessageBox, ElNotification } from "element-plus";
 import pdf from "@/components/pdf/pdf";
 import PDFView from "@/components/PDFView";
+import printJS from "print-js";
+
 export default {
   components: {
     pdf,
     PDFView,
   },
+  // directives: {
+  //   printJS,
+  // },
   setup() {
     let { proxy } = getCurrentInstance();
     const router = useRouter();
@@ -234,9 +247,21 @@ export default {
           valueparam1: 32132,
         },
       ];
-      console.log(proxy.$route.query.id);
-      let query_id = proxy.$route.query.id;
+      // console.log(proxy.$route.query.id);
+      // let query_id = proxy.$route.query.id;
+      // console.log(localStorage.query_id );
+      let query_id = localStorage.query_id;
+
+      // if (query_id == null) {
+      //   console.log("空值");
+      //   query_id = "no_value";
+      // } else {
+      //   console.log("有值");
+      //   console.log(query_id);
+      // }
+      // console.log(query_id);
       let url = `/api/wjproject/query`;
+
       proxy.$axios
         .get(url, {
           params: {
@@ -246,115 +271,121 @@ export default {
         })
         .then(({ data }) => {
           // 将json字符串转为json对象
-          const data_json = JSON.parse(data);
-          console.log(data_json);
-          state.tableData = [
-            {
-              //   id: this.dataForm.headImg,
-              id: 1,
-              keyword1: "ID",
-              valueparam1: data_json.id,
-              keyword2: "文件名称",
-              valueparam2: data_json.dataName,
-            },
-            {
-              id: 1,
-              keyword1: "档案号",
-              valueparam1: data_json.dataNumber,
-              keyword2: "原始格式",
-              valueparam2: data_json.dataFormat,
-            },
-            {
-              id: 1,
-              keyword1: "项目名称",
-              valueparam1: data_json.dataprojectname,
-              keyword2: "制图单位",
-              valueparam2: data_json.dataCompany,
-            },
-            {
-              id: 1,
-              keyword1: "制图人员",
-              valueparam1: data_json.dataMaker2,
-              keyword2: "拟编人员",
-              valueparam2: data_json.dataMaker,
-            },
-            {
-              id: 1,
-              keyword1: "审核人员",
-              valueparam1: data_json.dataMaker3,
-              keyword2: "比例尺",
-              valueparam2: data_json.dataScale,
-            },
-            {
-              id: 1,
-              keyword1: "制图日期",
-              valueparam1: data_json.dataDate,
-              keyword2: "坐标系统",
-              valueparam2: data_json.dataCoordinate,
-            },
-            {
-              id: 1,
-              keyword1: "入库人员",
-              valueparam1: data_json.dataAdmin,
-              keyword2: "入库单位",
-              valueparam2: data_json.dataStorageCompany,
-            },
-            {
-              id: 1,
-              keyword1: "入库地点",
-              valueparam1: data_json.dataStorageLocation,
-              keyword2: "关键词1",
-              valueparam2: data_json.dataKeyWord1,
-            },
-            {
-              id: 1,
-              keyword1: "关键词2",
-              valueparam1: data_json.dataKeyWord2,
-              keyword2: "关键词3",
-              valueparam2: data_json.dataKeyWord3,
-            },
-            {
-              id: 1,
-              keyword1: "左下角X",
-              valueparam1: data_json.dataLeftX,
-              keyword2: "左下角Y",
-              valueparam2: data_json.dataLeftY,
-            },
-            {
-              id: 1,
-              keyword1: "右下角X",
-              valueparam1: data_json.dataRightX,
-              keyword2: "右下角Y",
-              valueparam2: data_json.dataRightY,
-            },
-            {
-              id: 1,
-              keyword1: "附属图ID",
-              valueparam1: data_json.imgList,
-              keyword2: "源文件ID",
-              valueparam2: data_json.fileList,
-            },
-            {
-              id: 1,
-              keyword1: "备注",
-              valueparam1: data_json.dataIntro,
-            },
-          ];
-          //   获取Base64
-          // state.img_io = data_json["img_obj"]["$binary"];
-          // 根据后缀名判断是PDF还是图片
-          if (data_json.img_name.split(".")[1] == "pdf") {
-            console.log("PDF");
-            state.show = false;
-            state.pdfUrl = "/api/wjproject/media/" + data_json.img_name;
-            // state.pdfUrl = "/api/wjproject/media/" + "开发文档.pdf";
-          } else {
-            console.log("图片");
-            state.show = true;
+          if (data != null) {
+            const data_json = JSON.parse(data);
+            // console.log(data_json);
+            state.tableData = [
+              {
+                //   id: this.dataForm.headImg,
+                id: 1,
+                keyword1: "ID",
+                valueparam1: data_json.id,
+                keyword2: "文件名称",
+                valueparam2: data_json.dataName,
+              },
+              {
+                id: 1,
+                keyword1: "档案号",
+                valueparam1: data_json.dataNumber,
+                keyword2: "原始格式",
+                valueparam2: data_json.dataFormat,
+              },
+              {
+                id: 1,
+                keyword1: "项目名称",
+                valueparam1: data_json.dataprojectname,
+                keyword2: "制图单位",
+                valueparam2: data_json.dataCompany,
+              },
+              {
+                id: 1,
+                keyword1: "制图人员",
+                valueparam1: data_json.dataMaker2,
+                keyword2: "拟编人员",
+                valueparam2: data_json.dataMaker,
+              },
+              {
+                id: 1,
+                keyword1: "审核人员",
+                valueparam1: data_json.dataMaker3,
+                keyword2: "比例尺",
+                valueparam2: data_json.dataScale,
+              },
+              {
+                id: 1,
+                keyword1: "制图日期",
+                valueparam1: data_json.dataDate,
+                keyword2: "坐标系统",
+                valueparam2: data_json.dataCoordinate,
+              },
+              {
+                id: 1,
+                keyword1: "入库人员",
+                valueparam1: data_json.dataAdmin,
+                keyword2: "入库单位",
+                valueparam2: data_json.dataStorageCompany,
+              },
+              {
+                id: 1,
+                keyword1: "入库地点",
+                valueparam1: data_json.dataStorageLocation,
+                keyword2: "关键词1",
+                valueparam2: data_json.dataKeyWord1,
+              },
+              {
+                id: 1,
+                keyword1: "关键词2",
+                valueparam1: data_json.dataKeyWord2,
+                keyword2: "关键词3",
+                valueparam2: data_json.dataKeyWord3,
+              },
+              {
+                id: 1,
+                keyword1: "左下角X",
+                valueparam1: data_json.dataLeftX,
+                keyword2: "左下角Y",
+                valueparam2: data_json.dataLeftY,
+              },
+              {
+                id: 1,
+                keyword1: "右下角X",
+                valueparam1: data_json.dataRightX,
+                keyword2: "右下角Y",
+                valueparam2: data_json.dataRightY,
+              },
+              {
+                id: 1,
+                keyword1: "附属图ID",
+                valueparam1: data_json.imgList,
+                keyword2: "源文件ID",
+                valueparam2: data_json.fileList,
+              },
+              {
+                id: 1,
+                keyword1: "备注",
+                valueparam1: data_json.dataIntro,
+              },
+            ];
+            //   获取Base64
+            // state.img_io = data_json["img_obj"]["$binary"];
+            // 根据后缀名判断是PDF还是图片
+            if (data_json.img_name.split(".")[1] == "pdf") {
+              // console.log("PDF");
+              state.show = false;
+              state.pdfUrl = "/api/wjproject/media/" + data_json.img_name;
+              // state.pdfUrl = "/api/wjproject/media/" + "开发文档.pdf";
+            } else {
+              // console.log("图片");
+              state.show = true;
+            }
+            // 获取服务器URL
+            state.images = ["/api/wjproject/media/" + data_json.img_name];
+            state.currentid = data_json.id;
           }
-          // 获取服务器URL
-          state.images = ["/api/wjproject/media/" + data_json.img_name];
-          state.currentid = data_json.id;
+        })
+        .catch((error) => {
+          console.log(error);
+          console.log("网络错误");
         });
       state.loading = false;
     };
@@ -841,6 +872,7 @@ export default {
       preBtn,
       nextBtn,
       fullScreenView,
+      printJS,
     };
   },
 };

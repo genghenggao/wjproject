@@ -4,7 +4,7 @@
  * @Author: henggao
  * @Date: 2021-01-08 19:25:55
  * @LastEditors: henggao
- * @LastEditTime: 2021-07-12 16:57:43
+ * @LastEditTime: 2021-08-07 10:20:01
 -->
 <template>
   <div id="scroll-board">
@@ -13,43 +13,91 @@
 </template>
 
 <script>
+import { reactive, toRefs, getCurrentInstance } from "vue";
 export default {
-  name: 'ScrollBoard',
-  data () {
-    return {
+  name: "ScrollBoard",
+  // data() {
+  //   return {
+  //     config: {
+  //       header: ["时间", "数据信息", "数量", "项目名称"],
+  //       data: [
+  //         ["2019-07-01 19:25:00", "某某成功上传文件", "1", "xxxxxxx"],
+  //         ["2019-07-02 17:25:00", "某某成功下载文件", "3", "xxxxxxx"],
+  //         ["2019-07-03 16:25:00", "某某成功下载文件", "6", "xxxxxxx"],
+  //         ["2019-07-04 15:25:00", "某某成功下载文件", "2", "xxxxxxx"],
+  //         ["2019-07-05 14:25:00", "某某成功下载文件", "1", "xxxxxxx"],
+  //         ["2019-07-06 13:25:00", "某某成功上传文件", "3", "xxxxxxx"],
+  //         ["2019-07-07 12:25:00", "某某成功上传文件", "4", "xxxxxxx"],
+  //         ["2019-07-08 11:25:00", "某某成功上传文件", "2", "xxxxxxx"],
+  //         ["2019-07-09 10:25:00", "某某成功上传文件", "5", "xxxxxxx"],
+  //         ["2019-07-10 09:25:00", "某某成功上传文件", "5", "xxxxxxx"],
+  //       ],
+  //       index: true,
+  //       columnWidth: [50, 170, 300],
+  //       align: ["center"],
+  //       rowNum: 7,
+  //       headerBGC: "#1981f6",
+  //       headerHeight: 45,
+  //       oddRowBGC: "rgba(0, 44, 81, 0.8)",
+  //       evenRowBGC: "rgba(10, 29, 50, 0.8)",
+  //     },
+  //   };
+  // },
+  setup() {
+    let { proxy } = getCurrentInstance();
+    const state = reactive({
       config: {
-        header: ['时间', '数据信息', '数量', '区域'],
+        header: ["时间", "数据信息", "数量", "项目名称"],
         data: [
-          ['2019-07-01 19:25:00', '区域A-钻孔数据', '105', 'xxxxxxx'],
-          ['2019-07-02 17:25:00', '区域B-地理数据', '113', 'xxxxxxx'],
-          ['2019-07-03 16:25:00', '区域C-地质数据', '360', 'xxxxxxx'],
-          ['2019-07-04 15:25:00', '区域C-地震数据', '200', 'xxxxxxx'],
-          ['2019-07-05 14:25:00', '注册用户数据', '10', 'xxxxxxx'],
-          ['2019-07-06 13:25:00', '其他数据', '3', 'xxxxxxx'],
-          ['2019-07-07 12:25:00', '区域A-遥感数据', '400', 'xxxxxxx'],
-          ['2019-07-08 11:25:00', '区域D-地震数据', '200', 'xxxxxxx'],
-          ['2019-07-09 10:25:00', '区域B-地震数据', '500', 'xxxxxxx'],
-          ['2019-07-10 09:25:00', '区域A-测井数据', '365', 'xxxxxxx']
+          ["2019-07-01 19:25:00", "某某成功上传文件", "1", "xxxxxxx"],
+          ["2019-07-02 17:25:00", "某某成功下载文件", "3", "xxxxxxx"],
+          ["2019-07-03 16:25:00", "某某成功下载文件", "6", "xxxxxxx"],
+          ["2019-07-04 15:25:00", "某某成功下载文件", "2", "xxxxxxx"],
+          ["2019-07-05 14:25:00", "某某成功下载文件", "1", "xxxxxxx"],
+          ["2019-07-06 13:25:00", "某某成功上传文件", "3", "xxxxxxx"],
+          ["2019-07-07 12:25:00", "某某成功上传文件", "4", "xxxxxxx"],
+          ["2019-07-08 11:25:00", "某某成功上传文件", "2", "xxxxxxx"],
+          ["2019-07-09 10:25:00", "某某成功上传文件", "5", "xxxxxxx"],
+          ["2019-07-10 09:25:00", "某某成功上传文件", "5", "xxxxxxx"],
         ],
         index: true,
-        columnWidth: [50, 170, 300],
-        align: ['center'],
+        columnWidth: [50, 170, 200, 100],
+        align: ["center"],
         rowNum: 7,
-        headerBGC: '#1981f6',
+        headerBGC: "#1981f6",
         headerHeight: 45,
-        oddRowBGC: 'rgba(0, 44, 81, 0.8)',
-        evenRowBGC: 'rgba(10, 29, 50, 0.8)'
-      }
+        oddRowBGC: "rgba(0, 44, 81, 0.8)",
+        evenRowBGC: "rgba(10, 29, 50, 0.8)",
+      },
+    });
+    //拿到字符串，转为json对象
+    const dataview_tmp = JSON.parse(proxy.$store.state.dataupload);
+    // console.log(dataview_tmp);
+    state.config.data = [];
+    for (let i = 0; i < dataview_tmp.length; i++) {
+      // console.log(dataview_tmp[i]);
+      const data_tmp = [
+        dataview_tmp[i]["file_date"].split(".")[0].replace("T", " "),
+        dataview_tmp[i]["data_admin"] + "上传了" + dataview_tmp[i]["data_name"],
+
+        dataview_tmp[i]["file_lenght"] + "MB",
+        dataview_tmp[i]["data_projectname"],
+      ];
+      state.config.data.push(data_tmp);
     }
-  }
-}
+    return {
+      ...toRefs(state),
+    };
+  },
+};
 </script>
 
 <style lang="scss">
 #scroll-board {
-  width: 50%;
+  // width: 100%;
+  width: 700px;
   box-sizing: border-box;
-  margin-left: 20px;
+  margin-left: 10px;
   height: 100%;
   overflow: hidden;
 }

@@ -4,7 +4,7 @@
  * @Author: henggao
  * @Date: 2021-07-11 14:33:26
  * @LastEditors: henggao
- * @LastEditTime: 2021-07-11 14:34:04
+ * @LastEditTime: 2021-08-11 20:27:57
 -->
 <template>
   <div class="table">
@@ -69,6 +69,7 @@
       </el-table-column>
     </el-table>
     <el-pagination
+      style="padding-left: 550px"
       @size-change="sizeChange"
       @current-change="currentChange"
       layout="total, sizes, prev, pager, next, jumper"
@@ -78,13 +79,34 @@
       :pager-count="pagerCount"
       :total="total"
     />
+    <el-dialog
+      title="权限修改"
+      v-model="dialogPermissionVisible"
+      width="20%"
+      center
+    >
+      <el-form ref="form" :model="ruleForm">
+        <el-form-item label="权限选择:" prop="type">
+          <el-checkbox-group v-model="ruleForm.type">
+            <el-checkbox label="高级用户" name="type"></el-checkbox>
+            <el-checkbox label="管理员" name="type"></el-checkbox>
+          </el-checkbox-group>
+        </el-form-item>
+        <el-form-item style="padding-left: 120px">
+          <el-button plain @click="dialogPermissionVisible = false"
+            >取消</el-button
+          >
+          <el-button type="primary" plain @click="submitForm()">确认</el-button>
+        </el-form-item>
+      </el-form>
+    </el-dialog>
   </div>
 </template>
 
 <script>
-import { onMounted, reactive, toRefs } from "vue";
+import { getCurrentInstance, onMounted, reactive, toRefs, inject } from "vue";
 import { useRouter } from "vue-router";
-import { ElMessageBox, ElNotification } from "element-plus";
+import { ElMessageBox, ElNotification, ElMessage } from "element-plus";
 
 export default {
   props: {
@@ -94,14 +116,20 @@ export default {
     datas: Object,
   },
   setup(props) {
+    let { proxy } = getCurrentInstance();
     const router = useRouter();
     const state = reactive({
       tableTitle: [],
       tableData: [],
       currentPage: 1,
-      pageSizes: [10, 20, 50, 100],
+      pageSizes: [10, 20, 50],
       pageSize: 10,
       total: 0,
+      dialogPermissionVisible: false,
+      ruleForm: {
+        username: "",
+        type: [],
+      },
     });
 
     onMounted(() => {
@@ -119,8 +147,47 @@ export default {
     };
 
     const edit = (val) => {
-      router.push({ path: "goods-add", query: { value: val, type: "edit" } });
-      console.log("edit:" + JSON.stringify(val));
+      // router.push({ path: "goods-add", query: { value: val, type: "edit" } });
+      // console.log("edit:" + JSON.stringify(val));
+      state.dialogPermissionVisible = true;
+      // console.log(val);
+      state.ruleForm.username = val["username"];
+      state.ruleForm.type = [];
+      if (val["is_staff"] == true) {
+        state.ruleForm.type.push("高级用户");
+      }
+      if (val["is_superuser"] == true) {
+        state.ruleForm.type.push("管理员");
+      }
+      // console.log(state.ruleForm);
+    };
+    const reload = inject("reload");
+    // reload();
+    // 权限修改提交
+    const submitForm = async () => {
+      // console.log(state.ruleForm);
+      // console.log(state.ruleForm.type);
+      let url = `/api/userpermission/`;
+      proxy
+        .$axios({
+          url: url,
+          method: "PUT",
+          data: state.ruleForm,
+        })
+        .then((res) => {
+          // state.dialogPermissionVisible = false;
+          console.log("success");
+          ElMessage.success({
+            message: "成功修改权限!",
+            type: "success",
+          });
+          // proxy.reload;
+          // 刷新表格
+          reload();
+        })
+        .catch((err) => {
+          console.log("网络错误");
+        });
     };
 
     const del = (val) => {
@@ -162,6 +229,8 @@ export default {
       onIndex,
       sizeChange,
       currentChange,
+      submitForm,
+      reload,
     };
   },
 };

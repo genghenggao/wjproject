@@ -4,62 +4,96 @@
  * @Author: henggao
  * @Date: 2021-07-11 14:54:54
  * @LastEditors: henggao
- * @LastEditTime: 2021-07-29 14:55:02
+ * @LastEditTime: 2021-08-12 18:33:51
 -->
 <template>
   <div class="login" :style="login">
-    <el-row :gutter="10" class="login-header">
-      <p>武甲图纸管理系统</p>
-    </el-row>
-    <el-row :gutter="10" class="login-container">
-      <el-form
-        :model="loginForm"
-        :rules="rules"
-        ref="validateForm"
-        label-width="1em"
-        class="login-body"
-        hide-required-asterisk="false"
+    <el-row style="height: 100%; width: 100%">
+      <el-col :span="12">
+        <div
+          class="test_two_box"
+          style="padding-left: 200px; padding-top: 240px"
+        >
+          <h2 style="color: white; padding-left: 200px">研究成果展示</h2>
+          <video id="myVideo" class="video-js" ref="video">
+            <source
+              src="/api/wjproject/media/三维地质模型.mp4"
+              type="video/mp4"
+            />
+            <!-- <source src="//vjs.zencdn.net/v/oceans.mp4" type="video/mp4" /> -->
+          </video>
+        </div></el-col
       >
-        <el-image class="login-logo" :src="logoImg"></el-image>
-        <el-form-item prop="username">
-          <el-input
-            v-model="loginForm.username"
-            prefix-icon="el-icon-user"
-            placeholder="请输入用户名称"
-          ></el-input>
-        </el-form-item>
-        <el-form-item prop="password">
-          <el-input
-            type="password"
-            v-model="loginForm.password"
-            prefix-icon="el-icon-lock"
-            show-password
-            placeholder="请输入密码"
-          ></el-input>
-        </el-form-item>
-        <el-form-item prop="imgCode">
-          <el-row>
-            <el-col :span="14">
-              <el-input
-                v-model="loginForm.imgCode"
-                prefix-icon="el-icon-message"
-                placeholder="请输入验证码"
-              ></el-input>
-            </el-col>
-            <el-col :span="9" :offset="1">
-              <VueImgVerify ref="verifyRef"></VueImgVerify>
-            </el-col>
+      <el-col :span="12">
+        <div class="login_content" style="height: 100%; width: 100%">
+          <el-row :gutter="10" class="login-header">
+            <p>武甲图纸管理系统</p>
           </el-row>
-        </el-form-item>
-        <el-form-item>
-          <el-button type="text">忘记密码？</el-button>
-        </el-form-item>
-        <el-form-item class="login-body-button">
-          <el-button class="login-submit" type="danger" round @click="submit"
-            >登录</el-button
-          >
-        </el-form-item>
-      </el-form>
+          <el-row :gutter="10" class="login-container">
+            <el-form
+              :model="loginForm"
+              :rules="rules"
+              ref="validateForm"
+              label-width="1em"
+              class="login-body"
+              hide-required-asterisk="false"
+            >
+              <el-image class="login-logo" :src="logoImg"></el-image>
+              <el-form-item prop="username">
+                <el-input
+                  v-model="loginForm.username"
+                  prefix-icon="el-icon-user"
+                  placeholder="请输入用户名称"
+                ></el-input>
+              </el-form-item>
+              <el-form-item prop="password">
+                <el-input
+                  type="password"
+                  v-model="loginForm.password"
+                  prefix-icon="el-icon-lock"
+                  show-password
+                  placeholder="请输入密码"
+                ></el-input>
+              </el-form-item>
+              <el-form-item prop="imgCode">
+                <el-row>
+                  <el-col :span="14">
+                    <el-input
+                      v-model="loginForm.imgCode"
+                      prefix-icon="el-icon-message"
+                      placeholder="请输入验证码"
+                    ></el-input>
+                  </el-col>
+                  <el-col :span="9" :offset="1">
+                    <VueImgVerify ref="verifyRef"></VueImgVerify>
+                  </el-col>
+                </el-row>
+              </el-form-item>
+              <el-form-item>
+                <el-button type="text">忘记密码？</el-button>
+              </el-form-item>
+              <el-form-item class="login-body-button">
+                <el-button
+                  class="login-submit"
+                  type="danger"
+                  round
+                  @click="submit"
+                  >登录</el-button
+                >
+              </el-form-item>
+            </el-form>
+          </el-row>
+          <el-row :gutter="10" class="login-footer">
+            <p>版权所有：阳泰集团武甲煤矿&nbsp;</p>
+            <p>
+              ICP备案：<a href="https://beian.miit.gov.cn/" target="_self"
+                >京ICP备2021024216号</a
+              >
+            </p>
+            <p>公司地址：晋城阳城县芹池镇武甲村</p>
+          </el-row>
+        </div>
+      </el-col>
     </el-row>
   </div>
 </template>
@@ -78,7 +112,14 @@ import { useStore } from "vuex";
 import { userlogin } from "@/api/serviceApi";
 import { ElMessage } from "element-plus";
 import VueImgVerify from "@/components/VueImageVerify";
+// import Video from "video.js";
+// import "video.js/dist/video-js.css";
+
 export default {
+  components: {
+    VueImgVerify,
+    // Video
+  },
   setup() {
     let { proxy } = getCurrentInstance();
     const router = useRouter();
@@ -108,6 +149,10 @@ export default {
 
     onBeforeMount(() => {
       state.login.height = document.body.clientHeight + "px";
+      // initVideo();
+      setTimeout(() => {
+        initVideo();
+      }, 300);
     });
 
     const submit = async () => {
@@ -133,6 +178,8 @@ export default {
           if (res.code === 200) {
             // 登录成功后设置token到vuex中
             localStorage.username = res.username;
+            localStorage.is_staff = res.is_staff;
+            localStorage.is_superuser = res.is_superuser;
             store.commit("setToken", res.access);
             router.push({ path: "home" });
           } else {
@@ -145,16 +192,30 @@ export default {
         });
     };
 
+    // 视频
+    const initVideo = () => {
+      //初始化视频方法
+      let myPlayer = proxy.$video("myVideo", {
+        //确定播放器是否具有用户可以与之交互的控件。没有控件，启动视频播放的唯一方法是使用autoplay属性或通过Player API。
+        controls: true,
+        //自动播放属性,muted:静音播放
+        autoplay: "muted",
+        //建议浏览器是否应在<video>加载元素后立即开始下载视频数据。
+        preload: "auto",
+        //设置视频播放器的显示宽度（以像素为单位）
+        width: "600px",
+        //设置视频播放器的显示高度（以像素为单位）
+        height: "400px",
+      });
+    };
     return {
       ...toRefs(state),
       rules,
       validateForm,
       verifyRef,
       submit,
+      initVideo,
     };
-  },
-  components: {
-    VueImgVerify,
   },
 };
 </script>
@@ -170,7 +231,7 @@ export default {
   }
   .login-header {
     position: absolute;
-    left: 50%;
+    left: 70%;
     top: 10%;
     transform: translate(-50%, -50%);
     color: #ffffff;
@@ -180,7 +241,7 @@ export default {
   }
   .login-container {
     position: absolute;
-    left: 50%;
+    left: 70%;
     top: 50%;
     transform: translate(-50%, -50%);
     // background: rgba(233, 233, 233, 0.3);
@@ -191,6 +252,20 @@ export default {
     img.el-image__inner {
       border-radius: 50%;
     }
+  }
+
+  .login-footer {
+    position: absolute;
+    left: 30%;
+    /* top: 50%; */
+    bottom: 40px;
+  }
+  .login-footer p {
+    float: left;
+    line-height: 27px;
+    color: #ffffff;
+    font-size: 14px;
+    margin-right: 20px;
   }
   .login-body {
     padding: 1rem 2rem;

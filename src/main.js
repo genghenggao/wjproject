@@ -4,7 +4,7 @@
  * @Author: henggao
  * @Date: 2021-07-10 16:55:38
  * @LastEditors: henggao
- * @LastEditTime: 2021-08-01 23:08:39
+ * @LastEditTime: 2021-08-12 15:55:09
  */
 import { createApp } from "vue";
 import App from "./App.vue";
@@ -31,10 +31,14 @@ import axios from 'axios'
 import 'viewerjs/dist/viewer.css'
 import VueViewer from 'v-viewer'
 
+import Video from "video.js";
+import "video.js/dist/video-js.css";
+
 // 全局挂载axios
 const app = createApp(App);
 
 app.config.globalProperties.$axios = axios;
+app.config.globalProperties.$video = Video;
 
 app.use(VueViewer)
 app.use(store).use(router).use(ElementPlus).use(dataV).mount("#app");

@@ -4,15 +4,50 @@
  * @Author: henggao
  * @Date: 2021-07-10 16:55:38
  * @LastEditors: henggao
- * @LastEditTime: 2021-07-10 23:46:35
+ * @LastEditTime: 2021-08-11 19:55:17
 -->
 <template>
   <!-- <div id="nav">
     <router-link to="/">Home</router-link> |
     <router-link to="/about">About</router-link>
   </div> -->
-  <router-view />
+  <!-- <router-view /> -->
+  <div id="app">
+    <router-view v-if="isRouterAlive"></router-view>
+  </div>
 </template>
+<script>
+import {
+  reactive,
+  onMounted,
+  onBeforeMount,
+  toRefs,
+  getCurrentInstance,
+  defineEmits,
+  provide,
+} from "vue";
+export default {
+  setup() {
+    let { proxy } = getCurrentInstance();
+    const state = reactive({
+      isRouterAlive: true,
+    });
+
+    const reload = () => {
+      state.isRouterAlive = false;
+      proxy.$nextTick(() => (state.isRouterAlive = true));
+    };
+
+    provide("reload", reload);
+
+    return {
+      ...toRefs(state),
+      reload,
+    };
+  },
+};
+</script>
+
 
 <style lang="scss">
 // #app {

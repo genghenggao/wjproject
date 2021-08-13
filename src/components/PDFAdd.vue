@@ -4,7 +4,7 @@
  * @Author: henggao
  * @Date: 2021-07-12 22:29:11
  * @LastEditors: henggao
- * @LastEditTime: 2021-07-29 21:01:23
+ * @LastEditTime: 2021-08-12 10:22:30
 -->
 <template>
   <div class="data-add">
@@ -455,7 +455,9 @@
             </el-card>
           </el-form-item>
           <el-form-item>
-            <el-button type="danger" @click="submitForm">立即提交</el-button>
+            <el-button type="danger" :disabled="!hasPerms()" @click="submitForm"
+              >立即提交</el-button
+            >
             <el-button @click="resetForm">重置</el-button>
           </el-form-item>
         </el-form>
@@ -833,6 +835,18 @@ export default {
       });
     };
 
+    // 判断按钮权限
+    const hasPerms = () => {
+      // return state.is_staff;
+      if (
+        localStorage.is_superuser == "true" ||
+        localStorage.is_staff == "true"
+      ) {
+        return true;
+      } else {
+        return false;
+      }
+    };
     // Excel
     const handleChange = async (file, fileList) => {
       // console.log(tableData2);
@@ -1100,6 +1114,7 @@ export default {
       handleSuccess, //上传附属图
       // handleRemove,
       // importfxx,
+      hasPerms,
     };
     // };
   },

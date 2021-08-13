@@ -4,14 +4,15 @@
  * @Author: henggao
  * @Date: 2021-01-08 19:25:55
  * @LastEditors: henggao
- * @LastEditTime: 2021-07-12 17:00:45
+ * @LastEditTime: 2021-08-07 10:47:03
 -->
 <template>
   <div id="water-level-chart">
-    <div class="water-level-chart-title">计划勘探累计完成情况</div>
+    <div class="water-level-chart-title">数据库总数据占比量</div>
 
     <div class="water-level-chart-details">
-      累计完成<span>25,180</span>GB
+      目前数据总量<span>{{ use_data }}</span
+      >GB
     </div>
 
     <div class="chart-container">
@@ -21,28 +22,47 @@
 </template>
 
 <script>
+import { reactive, toRefs, getCurrentInstance } from "vue";
 export default {
-  name: 'WaterLevelChart',
-  data () {
-    return {
+  name: "WaterLevelChart",
+  setup() {
+    let { proxy } = getCurrentInstance();
+    const state = reactive({
       config: {
         data: [45],
-        shape: 'round',
+        shape: "round",
         waveHeight: 25,
-        waveNum: 2
-      }
-    }
-  }
-}
+        waveNum: 2,
+      },
+      use_data: "",
+      dataview: "",
+    });
+
+    //拿到字符串，转为json对象
+    const dataview_tmp = JSON.parse(proxy.$store.state.datatop);
+
+    // console.log(dataview_tmp);
+    state.use_data = Math.round(dataview_tmp["fsUsedSize"] / 1024);
+
+    state.config.data = [
+      parseInt(
+        (dataview_tmp["fsUsedSize"] / dataview_tmp["fsTotalSize"]) * 100
+      ),
+    ];
+    return {
+      ...toRefs(state),
+    };
+  },
+};
 </script>
 
 <style lang="scss">
 #water-level-chart {
   width: 20%;
   box-sizing: border-box;
-  margin-left: 20px;
+  margin-left: 10px;
   background-color: rgba(6, 30, 93, 0.5);
-  border-top: 2px solid rgba(1, 153, 209, .5);
+  border-top: 2px solid rgba(1, 153, 209, 0.5);
   display: flex;
   flex-direction: column;
 

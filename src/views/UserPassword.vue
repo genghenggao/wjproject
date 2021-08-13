@@ -4,18 +4,19 @@
  * @Author: henggao
  * @Date: 2021-07-11 14:31:11
  * @LastEditors: henggao
- * @LastEditTime: 2021-07-11 14:31:51
+ * @LastEditTime: 2021-08-10 10:22:46
 -->
 <template>
   <div class="user-password">
     <el-card shadow="never">
       <template #header>
         <div class="clearfix">
-          <el-image
+          <!-- <el-image
             class="icon"
             :src="require('@/assets/image/icon/list.png')"
-          />
-          <span>修改密码</span>
+          /> -->
+          <i class="el-icon-s-custom"></i>
+          <span>  修改密码</span>
         </div>
       </template>
       <div class="content">
@@ -62,12 +63,13 @@
 </template>
 
 <script>
-import { reactive, ref, toRefs, unref } from "vue";
+import { reactive, ref, toRefs, unref, getCurrentInstance } from "vue";
 import { useRouter } from "vue-router";
-import { ElMessageBox } from "element-plus";
+import { ElMessageBox, ElMessage } from "element-plus";
 
 export default {
   setup() {
+    let { proxy } = getCurrentInstance();
     const router = useRouter();
     const validateForm = ref(null);
     const state = reactive({
@@ -114,16 +116,39 @@ export default {
       await form.validate();
 
       console.log(state.passForm);
-
-      ElMessageBox.alert("修改密码成功，需重新登录！", "提示", {
-        confirmButtonText: "确定",
-        type: "warning",
-        callback: (action) => {
-          if ("confirm" == action) {
-            router.push({ path: "login" });
+      // 获取数据库信息
+      let posturl = `/api/changepassword/`;
+      state.passForm.username = localStorage.username;
+      proxy
+        .$axios({
+          url: posturl,
+          method: "POST",
+          data: state.passForm,
+        })
+        .then((res) => {
+          console.log(res.data);
+          console.log(res.data["retCode"]);
+          if (res.data.length != 0) {
+            if (res.data["retCode"] == 0) {
+              console.log("原密码错误");
+              ElMessage.error("原密码错误，请重新输入！");
+            } else {
+              console.log("修改密码成功");
+              ElMessageBox.alert("修改密码成功，需重新登录！", "提示", {
+                confirmButtonText: "确定",
+                type: "warning",
+                callback: (action) => {
+                  if ("confirm" == action) {
+                    router.push({ path: "login" });
+                  }
+                },
+              });
+            }
           }
-        },
-      });
+        })
+        .catch((err) => {
+          console.log("err");
+        });
     };
 
     return {

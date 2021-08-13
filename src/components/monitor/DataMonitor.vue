@@ -4,7 +4,7 @@
  * @Author: henggao
  * @Date: 2021-07-12 11:10:52
  * @LastEditors: henggao
- * @LastEditTime: 2021-07-12 11:26:03
+ * @LastEditTime: 2021-08-04 21:06:37
 -->
 <template>
   <div class="user-list">
@@ -19,7 +19,9 @@
         </div>
       </template>
       <div class="content" style="height: 600px">
-        <index />
+        <template>
+          <index />
+        </template>
       </div>
     </el-card>
   </div>

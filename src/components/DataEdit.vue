@@ -336,7 +336,9 @@
           </el-form-item>
 
           <el-form-item>
-            <el-button type="danger" @click="submitForm">立即提交</el-button>
+            <el-button type="danger" :disabled="!hasPerms()" @click="submitForm"
+              >立即提交</el-button
+            >
             <el-button @click="resetForm">重置</el-button>
           </el-form-item>
         </el-form>
@@ -494,7 +496,8 @@ export default {
     });
     const init = () => {
       let url = `/api/wjproject/query`;
-      let edit_id = proxy.$route.query.id;
+      // let edit_id = proxy.$route.query.id;
+      let edit_id = localStorage.edit_id;
       // 获取get数据返回
       proxy.$axios
         .get(url, {
@@ -504,12 +507,24 @@ export default {
           },
         })
         .then(({ data }) => {
-          console.log(data);
+          // console.log(data);
           const data_json = JSON.parse(data);
-          console.log(data_json["id"]);
+          // console.log(data_json["id"]);
           state.toedit_id = data_json["id"];
           state.dataForm = data_json;
         });
+    };
+    // 判断按钮权限
+    const hasPerms = () => {
+      // return state.is_staff;
+      if (
+        localStorage.is_superuser == "true" ||
+        localStorage.is_staff == "true"
+      ) {
+        return true;
+      } else {
+        return false;
+      }
     };
     // Excel
     const handleChange = async (file, fileList) => {
@@ -668,6 +683,7 @@ export default {
       submitForm,
       resetForm,
       handleChange,
+      hasPerms,
     };
     // };
   },

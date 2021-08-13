@@ -4,7 +4,7 @@
  * @Author: henggao
  * @Date: 2021-07-12 14:48:03
  * @LastEditors: henggao
- * @LastEditTime: 2021-07-12 16:53:12
+ * @LastEditTime: 2021-08-07 15:35:17
 -->
   
   <template>
@@ -29,7 +29,8 @@
                 <scroll-board />
               </div>
 
-              <cards />
+              <!-- <cards /> -->
+              <cards :msg="data.msg" @getdatabaseinfo="getdatabaseinfo" />
             </div>
           </div>
         </div>
@@ -47,6 +48,13 @@ import roseChart from "@/components/monitor/roseChart";
 import waterLevelChart from "@/components/monitor/waterLevelChart";
 import scrollBoard from "@/components/monitor/scrollBoard";
 import cards from "@/components/monitor/cards";
+import {
+  reactive,
+  provide,
+  getCurrentInstance,
+  toRefs,
+  onBeforeMount,
+} from "vue";
 export default {
   name: "OverView",
   components: {
@@ -57,6 +65,62 @@ export default {
     waterLevelChart,
     scrollBoard,
     cards,
+  },
+  setup(props, context) {
+    let { proxy } = getCurrentInstance();
+    const state = reactive({
+      tmp: {
+        list: "",
+      },
+    });
+    const data = reactive({
+      msg: "TestPropsinfo",
+    });
+    onBeforeMount(() => {
+      init();
+    });
+
+    const getdatabaseinfo = (data) => {
+      // console.log(data);
+    };
+
+    const mmm = reactive({
+      list: [111, 222, 333],
+    });
+
+    // 父组件传值给子组件
+    provide("mmm", mmm.list);
+
+    const init = () => {
+      // 获取数据库信息
+      let url = `/api/wjproject/databaseinfo/`;
+      // console.log(proxy.$axios);
+      proxy.$axios
+        .get(url)
+        .then((res) => {
+          // console.log(res);
+          // console.log(data.data.list);
+          if (res.data != null) {
+            // console.log(res.data);
+            // localStorage.datamonitor = res.data.dataview; //以这种方式只能拿到[object object]
+            // 这里需要注意，将对象转为字符串
+            localStorage.dataview = JSON.stringify(res.data.dataview);
+            localStorage.datatop = JSON.stringify(res.data.datatop);
+            localStorage.dataupload = JSON.stringify(res.data.dataupload);
+            localStorage.datanum = JSON.stringify(res.data.datanum);
+          }
+        })
+        .catch((errot) => {
+          console.log("网络错误");
+        });
+    };
+
+    return {
+      ...toRefs(state),
+      data,
+      getdatabaseinfo,
+      init,
+    };
   },
 };
 </script>

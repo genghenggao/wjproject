@@ -2,9 +2,9 @@
  * @Description: henggao_learning
  * @version: v1.0.0
  * @Author: henggao
- * @Date: 2021-07-21 19:43:03
+ * @Date: 2021-08-09 09:49:08
  * @LastEditors: henggao
- * @LastEditTime: 2021-08-12 10:20:28
+ * @LastEditTime: 2021-08-09 22:12:12
 -->
 <template>
   <div class="data-info">
@@ -28,7 +28,7 @@
 
             <el-col :span="1.5">
               <el-button type="primary" plain @click="searchDataInfo"
-                >搜素</el-button
+                >搜索</el-button
               >
             </el-col>
             <el-col :span="1.5">
@@ -38,14 +38,15 @@
             </el-col>
 
             <el-col :span="1.5">
-              <el-button
-                type="danger"
-                plain
-                :disabled="!hasPerms()"
-                @click="downDataMore"
-                >批量下载</el-button
+              <el-button type="danger" plain @click="printDataMore"
+                >打印表格</el-button
               >
             </el-col>
+            <!-- <el-col :span="1.5">
+              <el-button type="danger" plain @click="addDataInfo"
+                >上传</el-button
+              >
+            </el-col> -->
             <el-col :span="2.5">
               <el-button
                 type="text"
@@ -58,13 +59,14 @@
         </div>
         <div class="content-main">
           <el-table
+            id="myTable"
             ref="multipleTable"
             :data="tableData"
             border
             stripe
             style="width: 100%; margin: 0.5em 0"
             @selection-change="handleSelectionChange"
-            height="640"
+            height="620"
             v-loading="loading"
             element-loading-text="拼命加载中..."
             element-loading-spinner="el-icon-loading"
@@ -130,31 +132,22 @@
               align="center"
               show-overflow-tooltip
             />
-            <el-table-column label="下载进度" align="center">
-              <template #default="scope">
-                <el-progress
-                  :percentage="scope.row.percentage"
-                  :color="customColors"
-                ></el-progress>
-              </template>
-            </el-table-column>
             <el-table-column label="操作" align="center" width="210">
               <template #default="scope">
                 <el-button
-                  type="primary"
-                  plain
                   size="small"
-                  @click="queryDataInfo(scope.row.id)"
-                  >查看</el-button
-                >
-                <el-button
                   type="danger"
                   plain
-                  size="small"
-                  :disabled="!hasPerms()"
-                  @click="downDataInfo(scope.row.id, scope)"
-                  >下载</el-button
+                  @click="queryDataInfo(scope.row.id)"
+                  >打印数据</el-button
                 >
+                <!-- <el-button
+                  size="small"
+                  type="success"
+                  plain
+                  @click="printJson(scope)"
+                  >打印</el-button
+                > -->
               </template>
             </el-table-column>
           </el-table>
@@ -487,28 +480,21 @@
             </template>
           </el-dialog>
           <el-dialog
-            title="批量下载信息"
-            v-model="dialogDownVisible"
-            width="30%"
+            title="打印字段信息"
+            v-model="dialogPrintVisible"
+            width="36%"
             center
           >
-            <el-table :data="downTable" :span-method="objectSpanMethod">
-              <el-table-column align="center" width="180" prop="id">
-                <el-progress
-                  type="circle"
-                  :percentage="downTable[3]['valueparam1']"
-                >
-                  <template #default="{ percentage }">
-                    <span class="percentage-value">{{ percentage }}%</span
-                    ><br />
-                    <br />
-                    <span class="percentage-label">当前进度</span>
-                  </template>
-                </el-progress>
-              </el-table-column>
-              <el-table-column width="180" prop="keyword1"></el-table-column>
-              <el-table-column prop="valueparam1"></el-table-column>
-            </el-table>
+            <el-transfer
+              v-model="value"
+              :data="select_data"
+              :titles="select_field"
+            />
+            <div style="padding-top: 20px; padding-left: 480px">
+              <el-button type="danger" plain @click="printData"
+                >确认打印</el-button
+              >
+            </div>
           </el-dialog>
         </div>
       </div>
@@ -526,15 +512,21 @@ import {
   unref,
 } from "vue";
 import { useRouter } from "vue-router";
-import {
-  defineComponent,
-  ElMessageBox,
-  ElNotification,
-  ElMessage,
-} from "element-plus";
+import { ElMessageBox, ElNotification, ElMessage } from "element-plus";
+import print from "vue3-print-nb";
+import pdf from "@/components/pdf/pdf";
+import PDFView from "@/components/PDFView";
+import printJS from "print-js";
 
 export default {
   name: "DataList",
+  components: {
+    pdf,
+    PDFView,
+  },
+  directives: {
+    print,
+  },
   setup() {
     let { proxy } = getCurrentInstance();
     const router = useRouter();
@@ -543,13 +535,11 @@ export default {
       keyword: "",
       loading: true,
       tableData: [],
-      downTable: [],
       currentPage: 1,
-      pageSizes: [10, 20],
+      pageSizes: [10, 20, 50, 100],
       pageSize: 10,
       total: 100,
       dialogFormVisible: false,
-      dialogDownVisible: false,
       dataForm: {
         dataName: "", // 文件名称
         dataNumber: "", // 档案号
@@ -580,76 +570,153 @@ export default {
       categorys: [],
       isSearch: false, //用于判断是否点击过搜索
       isAdvanceSearch: false, //用于判断是否点击过搜索
+      //   打印参数
+      img_io: "",
+      tableData: [],
+      currentid: "",
+      loading: true,
+      images: [],
+      pdfUrl: "",
+      show: true,
+      dialogPDFVisible: false,
+      drawer: false,
+      direction: "ltr",
+      printObj: {
+        beforeOpenCallback(vue) {
+          vue.printLoading = true;
+          console.log("打开之前");
+        },
+        openCallback(vue) {
+          vue.printLoading = false;
+          console.log("执行了打印");
+        },
+        closeCallback(vue) {
+          console.log("关闭了打印工具");
+        },
+      },
+      dataprintinfo: "",
       multipleSelection: [], //选中表格
-      customColor: "#409eff",
-      // percentage: 0,
-      customColors: [
-        { color: "#f56c6c", percentage: 20 },
-        { color: "#e6a23c", percentage: 40 },
-        { color: "#5cb87a", percentage: 60 },
-        { color: "#1989fa", percentage: 80 },
-        { color: "#6f7ad3", percentage: 100 },
-      ],
-      downFileSize: "",
-      downFileName: "",
-      downFileNum: "",
-      is_staff: false,
+      dialogPrintVisible: false,
+      select_data: [], //穿梭框数据表1
+      value: [2, 3, 4, 5], //穿梭框表2
+      select_field: ["可选字段", "已选字段"],
+      select_print: "",
     });
 
     onMounted(() => {
       init(state.pageSize, state.currentPage);
-      initDownTable();
       state.categorys = [
         { label: "国家2000", value: "1" },
         { label: "西安80", value: "2" },
         { label: "北京54", value: "3" },
         { label: "其他", value: "4" },
       ];
-      // hasPerms();
-      // getPerms(); //获取权限
+      //   generateData(); //   初始化穿梭框数据
+      state.select_data = [
+        {
+          key: 1,
+          label: `ID`,
+        },
+        {
+          key: 2,
+          label: `文件名称`,
+          disabled: true,
+        },
+        {
+          key: 3,
+          label: `档案号`,
+        },
+        {
+          key: 4,
+          label: `原始格式`,
+        },
+
+        {
+          key: 5,
+          label: `制图单位`,
+        },
+        {
+          key: 6,
+          label: `制图人员`,
+        },
+        {
+          key: 7,
+          label: `拟编人员`,
+        },
+        {
+          key: 8,
+          label: `审核人员`,
+        },
+        {
+          key: 9,
+          label: `比例尺`,
+        },
+        {
+          key: 10,
+          label: `制图日期`,
+        },
+        {
+          key: 11,
+          label: `坐标系统`,
+        },
+        {
+          key: 12,
+          label: `入库人员`,
+        },
+        {
+          key: 13,
+          label: `入库单位`,
+        },
+        {
+          key: 14,
+          label: `入库地点`,
+        },
+        {
+          key: 15,
+          label: `关键词1`,
+        },
+        {
+          key: 16,
+          label: `关键词2`,
+        },
+        {
+          key: 17,
+          label: `关键词3`,
+        },
+        {
+          key: 18,
+          label: `项目名称`,
+        },
+        {
+          key: 19,
+          label: `左下角X`,
+        },
+        {
+          key: 20,
+          label: `左下角Y`,
+        },
+        {
+          key: 21,
+          label: `右下角X`,
+        },
+        {
+          key: 22,
+          label: `右下角Y`,
+        },
+        {
+          key: 23,
+          label: `附属图ID`,
+        },
+        {
+          key: 24,
+          label: `源文件ID`,
+        },
+        {
+          key: 25,
+          label: `备注`,
+        },
+      ];
     });
-
-    // // 获取权限
-    // const getPerms = () => {
-    //   // return hasPermission(perms); //& !this.disabled
-    //   // 获取用户
-    //   console.log(localStorage.username);
-    //   console.log(localStorage.is_superuser);
-    //   console.log(typeof localStorage.is_superuser);
-
-    //   let url = `/api/searchuser/`;
-    //   proxy
-    //     .$axios({
-    //       url: url,
-    //       method: "GET",
-    //       params: {
-    //         username: localStorage.username,
-    //       },
-    //     })
-    //     .then((res) => {
-    //       console.log("success");
-    //       console.log(res.data.list);
-    //       console.log(res.data.list[0]["is_staff"]);
-    //       state.is_staff = res.data.list[0]["is_staff"];
-    //       console.log(state.is_staff);
-    //     })
-    //     .catch((err) => {
-    //       console.log("网络错误");
-    //     });
-    // };
-    // 判断按钮权限
-    const hasPerms = () => {
-      // console.log(state.is_staff);
-      // return state.is_staff;
-      if (
-        localStorage.is_superuser == "true" ||
-        localStorage.is_staff == "true"
-      ) {
-        return true;
-      } else {
-        return false;
-      }
-    };
 
     // 初始化数据
     const init = (n1, n2) => {
@@ -667,7 +734,6 @@ export default {
           dataAdmin: "张先生",
           dataStorageCompany: "武甲",
           dataKeyWord1: "图",
-          percentage: 0,
         },
         {
           dataName: "文件1",
@@ -679,7 +745,6 @@ export default {
           dataAdmin: "张先生",
           dataStorageCompany: "武甲",
           dataKeyWord1: "图",
-          percentage: 0,
         },
       ];
       let url = `/api/wjproject/`;
@@ -692,44 +757,20 @@ export default {
           },
         })
         .then(({ data }) => {
-          // 添加进度条参数
+          // console.log(data);
+          // console.log(data.data.list);
           if (data.data.list != null) {
-            for (let i = 0; i < data.data.list.length; i++) {
-              data.data.list[i].percentage = 0;
-            }
             state.tableData = data.data.list;
             state.total = data.data.count;
           }
+        })
+        .catch((errot) => {
+          console.log("网络错误");
         });
 
       state.loading = false;
     };
 
-    // 初始化下载信息数据
-    const initDownTable = () => {
-      state.downTable = [
-        {
-          id: 1,
-          keyword1: "文件名称",
-          valueparam1: "下载文件",
-        },
-        {
-          id: 1,
-          keyword1: "文件个数",
-          valueparam1: 0,
-        },
-        {
-          id: 1,
-          keyword1: "文件大小",
-          valueparam1: 0,
-        },
-        {
-          id: 1,
-          keyword1: "下载进度",
-          valueparam1: 0,
-        },
-      ];
-    };
     // 详情
     const queryDataInfo = (id) => {
       localStorage.query_id = id;
@@ -739,17 +780,196 @@ export default {
       });
       // console.log(id);
     };
+    // 打印详情
+    const printDataInfo = (id) => {
+      localStorage.query_id = id;
+      console.log(id);
+      state.printObj = {
+        id: "print_demo",
+        popTitle: "打印的标题",
+        extraCss:
+          "https://cdn.bootcdn.net/ajax/libs/animate.css/4.1.1/animate.compat.css, https://cdn.bootcdn.net/ajax/libs/hover.css/2.3.1/css/hover-min.css",
+        extraHead: '<meta http-equiv="Content-Language"content="zh-cn"/>',
+      };
+    };
 
-    //保存选中结果
-
+    // 选择数据
     const handleSelectionChange = (val) => {
       // 将选中的值添加到multipleSelection中
-      // console.log(val);
-      state.multipleSelection = [];
-      for (let key in val) {
-        // console.log(val[key].id);
-        state.multipleSelection.push(val[key].id);
+      //   console.log(val);
+      state.select_print = val;
+      //   state.multipleSelection = [];
+      //   for (let key in val) {
+      //     // console.log(val[key].id);
+      //     state.multipleSelection.push(val[key].id);
+      //   }
+    };
+
+    // 批量打印选中
+    const printDataMore = () => {
+      // console.log(state.multipleSelection);
+      // 获取选中的值multipleSelection
+      if (state.select_print.length == 0) {
+        ElMessage.error("请至少选择一个文件！");
+      } else {
+        //   选择打印字段
+        state.dialogPrintVisible = true;
       }
+    };
+    // 确认打印
+    const printData = () => {
+      console.log(state.select_print);
+      console.log(state.value);
+      //   根据value获取字段
+      const print_field = [
+        "ID",
+        "文件名称",
+        "档案号",
+        "原始格式",
+        // "项目名称",
+        `制图单位`,
+        `制图人员`,
+        `拟编人员`,
+        `审核人员`,
+        `比例尺`,
+        `制图日期`,
+        `坐标系统`,
+        `入库人员`,
+        `入库单位`,
+        `入库地点`,
+        `关键词1`,
+        `关键词2`,
+        `关键词3`,
+        "项目名称",
+        `左下角X`,
+        `左下角Y`,
+        `右下角X`,
+        `右下角Y`,
+        `附属图ID`,
+        `源文件ID`,
+        `备注`,
+      ];
+      //   获取数据对应key值，与state.value-1
+      const print_field_sure = Object.keys(state.select_print[0]);
+      //   console.log(print_field_sure);
+      const print_arr = [];
+      for (var i = 0; i < state.value.length; i++) {
+        // console.log(state.value[i]);
+        const print_field_name = print_field_sure[state.value[i] - 1];
+        const print_field_tmp = print_field[state.value[i] - 1];
+        const printjson = {
+          field: print_field_name,
+          displayName: print_field_tmp,
+          columnSize: 1,
+        };
+        // console.log(printjson);
+        print_arr.push(printjson);
+      }
+
+      printJS({
+        printable: state.select_print,
+        properties: print_arr,
+        type: "json",
+        header: "武甲图纸管理系统",
+        // 样式设置
+        gridStyle: "border: 2px solid #3971A5;",
+        gridHeaderStyle: "color: red;  border: 2px solid #3971A5;",
+      });
+    };
+
+    const printJson = async (scope) => {
+      console.log(scope);
+      console.log(scope.row);
+
+      let id = "myTable";
+      const html = document.querySelector("#" + id).innerHTML;
+      // 新建一个 DOM
+      const div = document.createElement("div");
+      const printDOMID = "printDOMElement";
+      div.id = printDOMID;
+      div.innerHTML = html;
+
+      // 提取第一个表格的内容 即表头
+      const ths = div.querySelectorAll(".el-table__header-wrapper th");
+      const ThsTextArry = [];
+      for (let i = 0, len = ths.length; i < len; i++) {
+        if (ths[i].innerText !== "") ThsTextArry.push(ths[i].innerText);
+      }
+
+      // 删除多余的表头
+      div.querySelector(".hidden-columns").remove();
+      // 第一个表格的内容提取出来后已经没用了 删掉
+      div.querySelector(".el-table__header-wrapper").remove();
+
+      // 将第一个表格的内容插入到第二个表格
+      let newHTML = "<tr>";
+      for (let i = 0, len = ThsTextArry.length; i < len; i++) {
+        newHTML +=
+          '<td style="text-align: center; font-weight: bold">' +
+          ThsTextArry[i] +
+          "</td>";
+      }
+
+      newHTML += "</tr>";
+      div
+        .querySelector(".el-table__body-wrapper table")
+        .insertAdjacentHTML("afterbegin", newHTML);
+      // 将新的 DIV 添加到页面 打印后再删掉
+      document.querySelector("body").appendChild(div);
+
+      printJS({
+        printable: printDOMID,
+        type: "html",
+        scanStyles: false,
+        style: "table { border-collapse: collapse }", // 表格样式
+      });
+
+      div.remove();
+    };
+    // 添加
+    const addDataInfo = () => {
+      // router.push({ path: "data-add", query: { type: "add" } });
+      router.push({ path: "/doc-add" });
+    };
+
+    // 删除
+    const delDataInfo = (id) => {
+      ElMessageBox.confirm("此操作将永久删除该条数据, 是否继续?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+        callback: (action) => {
+          if ("confirm" == action) {
+            console.log("提交：" + id);
+            let url = `/api/wjproject/query/`;
+            // 获取数据返回
+            proxy.$axios
+              .delete(url, {
+                data: { _id: id },
+              })
+              .then(({ data }) => {
+                console.log(data);
+              });
+            init();
+            ElNotification({
+              title: "成功",
+              message: "删除成功！",
+              duration: 2000,
+              type: "success",
+            });
+          }
+        },
+      });
+    };
+
+    // 编辑
+    const upDataInfo = (id) => {
+      localStorage.edit_id = id;
+      router.push({
+        path: "/data-edit",
+        // query: { id: id, type: "edit" },
+      });
+      console.log(id);
     };
 
     // 搜索
@@ -812,65 +1032,6 @@ export default {
         });
     };
 
-    // 下载
-    const downDataInfo = (id, scope) => {
-      console.log(scope.$index);
-      const current_row = scope.$index;
-      // state.tableData[current_row].percentage = 88;
-      console.log(state.tableData);
-      // row.percentage = 20
-      let url = `/api/wjproject/downloaddata/`;
-      proxy.$axios
-        .get(url, {
-          params: {
-            download_id: id,
-          },
-          responseType: "blob",
-          onDownloadProgress: (progress) => {
-            //progress可以改成其他的参数，不需要提前声明
-            console.log(progress);
-            console.log(
-              Math.round((progress.loaded / progress.total) * 100) + "%"
-            );
-            state.tableData[current_row].percentage = Math.round(
-              (progress.loaded / progress.total) * 100
-            );
-            // proxy.dlProgress = Math.round(
-            //   (progress.loaded / progress.total) * 100
-            // );
-          },
-        })
-        .then((res) => {
-          // console.log(proxy);
-          //   console.log("success");
-          let blob = new Blob([res.data], {
-            type: "application/octet-stream",
-          });
-          // 切割出文件名
-          const fileNameEncode =
-            res.headers["content-disposition"].split("filename=")[1];
-          // 解码
-          console.log(fileNameEncode);
-          let fileName = decodeURIComponent(fileNameEncode);
-          console.log(fileName);
-          if (window.navigator.msSaveOrOpenBlob) {
-            // console.log(2)
-            navigator.msSaveBlob(blob, fileName);
-          } else {
-            // console.log(3)
-            var link = document.createElement("a");
-            link.href = window.URL.createObjectURL(blob);
-            link.download = fileName;
-            link.click();
-            //释放内存
-            window.URL.revokeObjectURL(link.href);
-          }
-        })
-        .catch((err) => {
-          console.log(err);
-        });
-    };
-
     const sizeChange = (val) => {
       console.log(`每页 ${val} 条`);
       state.pageSize = val;
@@ -909,128 +1070,31 @@ export default {
       // console.log(form);
       form.resetFields(); //清空字段
     };
-    // 下载进度条设置
-    const customColorMethod = (percentage) => {
-      if (percentage < 30) {
-        return "#909399";
-      }
-      if (percentage < 70) {
-        return "#e6a23c";
-      }
-      return "#67c23a";
-    };
     // 重置表格数据
     const resetList = () => {
-      // console.log("重置表格");
+      console.log("重置表格");
       state.isSearch = false;
       state.isAdvanceSearch = false;
       state.currentPage = 1;
       state.pageSize = 10;
       init(10, 1);
     };
-    // 批量下载信息获取
-    const downDataMore = () => {
-      // console.log(state.multipleSelection);
-      // 获取选中的值multipleSelection
-      if (state.multipleSelection.length == 0) {
-        ElMessage.error("请至少选择一个文件！");
-      } else {
-        state.dialogDownVisible = true;
-        const data = state.multipleSelection;
-        // 获取信息
-        let url_info = `/api/wjproject/batchdownloadpreview/`;
-        proxy.$axios
-          .get(url_info, {
-            params: {
-              datainfo: data,
-            },
-          })
-          .then((res) => {
-            // console.log(res.data);
-            state.downFileSize = res.data["file_len"];
-            state.downFileNum = res.data["file_num"];
-            var timestamp = new Date().valueOf();
-            state.downFileName = timestamp + ".zip";
-            state.downTable = [
-              {
-                id: 1,
-                keyword1: "文件名称",
-                valueparam1: state.downFileName,
-              },
-              {
-                id: 1,
-                keyword1: "文件个数",
-                valueparam1: state.downFileNum,
-              },
-              {
-                id: 1,
-                keyword1: "文件大小",
-                valueparam1:
-                  (state.downFileSize / 1024 / 1000).toFixed(2) + "M",
-              },
-              {
-                id: 1,
-                keyword1: "下载进度",
-                valueparam1: 0,
-              },
-            ];
-          });
-        // console.log(data.length);
-        let url = `/api/wjproject/batchdownload/`;
-        // console.time("sort");
-        proxy.$axios
-          .get(url, {
-            params: {
-              datainfo: data,
-            },
-            responseType: "blob",
-            onDownloadProgress: (progress) => {
-              //progress可以改成其他的参数，不需要提前声明
-              state.downTable[3]["valueparam1"] = Math.round(
-                (progress.loaded / state.downFileSize) * 100
-              );
-            },
-          })
-          .then((res) => {
-            // console.log(res);
-            // console.log(res.data["size"]);
-            state.downTable[3]["valueparam1"] = 100;
-            const fileName = state.downFileName;
 
-            let blob = new Blob([res.data], {
-              // type: "application/octet-stream",
-              type: "application/zip",
-            });
-            if (window.navigator.msSaveOrOpenBlob) {
-              // console.log(2)
-              navigator.msSaveBlob(blob, fileName);
-            } else {
-              // console.log(3)
-              var link = document.createElement("a");
-              link.href = window.URL.createObjectURL(blob);
-              link.download = fileName;
-              link.click();
-              //释放内存
-              window.URL.revokeObjectURL(link.href);
-            }
-          })
-          .catch((err) => {
-            ElNotification({
-              title: "失败",
-              message: "批量下载数据失败！",
-              duration: 2000,
-              type: "danger",
-            });
-          });
-        // console.timeEnd("sort");
+    // // 自定义列背景色
+    const columnStyle = ({ row, column, rowIndex, columnIndex }) => {
+      if (columnIndex == 0 || columnIndex == 1 || columnIndex == 3) {
+        //第三第四列的背景色就改变了2和3都是列数的下标
+        return "background:#f3f6fc; font-weight:bold";
+      } else {
+        return "background:#ffffff;";
       }
     };
-    // 批量下载表格信息，表格并列
+    // 和并列
     const objectSpanMethod = ({ row, column, rowIndex, columnIndex }) => {
       if (columnIndex === 0) {
-        if (rowIndex % 4 === 0) {
+        if (rowIndex % 13 === 0) {
           return {
-            rowspan: 4,
+            rowspan: 13,
             colspan: 1,
           };
         } else {
@@ -1052,25 +1116,29 @@ export default {
       init,
       validateForm,
       queryDataInfo,
-      downDataInfo,
+      addDataInfo,
+      delDataInfo,
+      upDataInfo,
       sizeChange,
       currentChange,
       resetForm,
       resetList,
       searchDataInfo,
       advanceSearch,
-      handleSelectionChange,
-      customColorMethod,
+      columnStyle,
       objectSpanMethod,
-      downDataMore,
-      hasPerms, //按钮权限
-      // getPerms, //获取权限
+      printDataInfo,
+      printJson,
+      handleSelectionChange,
+      printJS,
+      printDataMore,
+      printData,
     };
   },
 };
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 @import "../assets/css/common.css";
 
 .data-info {

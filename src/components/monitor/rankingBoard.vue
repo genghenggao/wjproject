@@ -4,64 +4,74 @@
  * @Author: henggao
  * @Date: 2021-01-08 19:25:55
  * @LastEditors: henggao
- * @LastEditTime: 2021-07-11 17:01:08
+ * @LastEditTime: 2021-08-07 10:46:51
 -->
 <template>
   <div id="ranking-board">
-    <div class="ranking-board-title">勘探数据记录数量</div>
+    <div class="ranking-board-title">数据库总数据数</div>
     <dv-scroll-ranking-board :config="config" />
   </div>
 </template>
 
 <script>
+import { reactive, onMounted, toRefs, getCurrentInstance } from "vue";
 export default {
-  name: 'RankingBoard',
-  data () {
-    return {
+  name: "RankingBoard",
+  setup() {
+    let { proxy } = getCurrentInstance();
+
+    const state = reactive({
       config: {
         data: [
           {
-            name: '地理数据',
-            value: 55
+            name: "xxxx项目数据",
+            value: 55,
           },
           {
-            name: '遥感数据',
-            value: 120
+            name: "xxxx项目数据",
+            value: 120,
           },
           {
-            name: '钻孔数据',
-            value: 78
+            name: "xxxx项目数据",
+            value: 78,
           },
           {
-            name: '测井数据',
-            value: 66
+            name: "xxxx项目数据",
+            value: 66,
           },
           {
-            name: '地质数据',
-            value: 80
+            name: "xxxx项目数据",
+            value: 80,
           },
           {
-            name: '地震数据',
-            value: 500
+            name: "xxxx项目数据",
+            value: 500,
           },
           {
-            name: '用户数据',
-            value: 0.029
+            name: "xxxx项目数据",
+            value: 10,
           },
           {
-            name: '其他数据',
-            value: 29
+            name: "xxxx项目数据",
+            value: 29,
           },
           {
-            name: '历史数据',
-            value: 29
-          }
+            name: "xxxx项目数据",
+            value: 29,
+          },
         ],
-        rowNum: 9
-      }
-    }
-  }
-}
+        rowNum: 9,
+      },
+    });
+    //拿到字符串，转为json对象
+    const dataview_tmp = JSON.parse(proxy.$store.state.datanum);
+    // console.log(dataview_tmp);
+    state.config.data = dataview_tmp;
+    return {
+      ...toRefs(state),
+    };
+  },
+};
 </script>
 
 <style lang="scss">
@@ -71,7 +81,7 @@ export default {
   display: flex;
   flex-direction: column;
   background-color: rgba(6, 30, 93, 0.5);
-  border-top: 2px solid rgba(1, 153, 209, .5);
+  border-top: 2px solid rgba(1, 153, 209, 0.5);
   box-sizing: border-box;
   padding: 0px 30px;
 

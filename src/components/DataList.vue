@@ -4,7 +4,7 @@
  * @Author: henggao
  * @Date: 2021-07-11 10:17:33
  * @LastEditors: henggao
- * @LastEditTime: 2021-07-31 10:05:00
+ * @LastEditTime: 2021-08-12 10:21:09
 -->
 <template>
   <div class="data-info">
@@ -28,7 +28,7 @@
 
             <el-col :span="1.5">
               <el-button type="primary" plain @click="searchDataInfo"
-                >搜素</el-button
+                >搜索</el-button
               >
             </el-col>
             <el-col :span="1.5">
@@ -38,7 +38,11 @@
             </el-col>
 
             <el-col :span="1.5">
-              <el-button type="danger" plain @click="addDataInfo"
+              <el-button
+                type="danger"
+                plain
+                :disabled="!hasPerms()"
+                @click="addDataInfo"
                 >上传</el-button
               >
             </el-col>
@@ -59,7 +63,7 @@
             border
             stripe
             style="width: 100%; margin: 0.5em 0"
-            height="680"
+            height="620"
             v-loading="loading"
             element-loading-text="拼命加载中..."
             element-loading-spinner="el-icon-loading"
@@ -138,6 +142,7 @@
                   type="primary"
                   size="small"
                   round
+                  :disabled="!hasPerms()"
                   @click="upDataInfo(scope.row.id)"
                   >编辑</el-button
                 >
@@ -145,6 +150,7 @@
                   type="danger"
                   size="small"
                   round
+                  :disabled="!hasPerms()"
                   @click="delDataInfo(scope.row.id)"
                   >删除</el-button
                 >
@@ -607,18 +613,32 @@ export default {
       state.loading = false;
     };
 
+    // 判断按钮权限
+    const hasPerms = () => {
+      // return state.is_staff;
+      if (
+        localStorage.is_superuser == "true" ||
+        localStorage.is_staff == "true"
+      ) {
+        return true;
+      } else {
+        return false;
+      }
+    };
     // 详情
     const queryDataInfo = (id) => {
+      localStorage.query_id = id;
       router.push({
-        path: "data-details",
-        query: { id: id, type: "query" },
+        path: "/data-details",
+        // query: { id: id, type: "query" },
       });
       // console.log(id);
     };
 
     // 添加
     const addDataInfo = () => {
-      router.push({ path: "data-add", query: { type: "add" } });
+      // router.push({ path: "data-add", query: { type: "add" } });
+      router.push({ path: "/doc-add" });
     };
 
     // 删除
@@ -653,9 +673,10 @@ export default {
 
     // 编辑
     const upDataInfo = (id) => {
+      localStorage.edit_id = id;
       router.push({
-        path: "data-edit",
-        query: { id: id, type: "edit" },
+        path: "/data-edit",
+        // query: { id: id, type: "edit" },
       });
       console.log(id);
     };
@@ -786,6 +807,7 @@ export default {
       resetList,
       searchDataInfo,
       advanceSearch,
+      hasPerms,
     };
   },
 };
