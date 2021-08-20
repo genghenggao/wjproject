@@ -8,7 +8,7 @@
             <el-avatar :size="60" :src="avatar"></el-avatar>
           </el-col>
           <el-col :span="5">
-            <div class="greetings">欢迎访问系统,祝你新的一天工作愉快！</div>
+            <div class="greetings">欢迎访问,祝您新的一天工作愉快！</div>
             <div class="weather">今天小雨转阴天,11~20°,天凉,注意加衣</div>
           </el-col>
           <el-col :span="6" :offset="10">

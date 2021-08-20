@@ -4,7 +4,7 @@
  * @Author: henggao
  * @Date: 2021-07-12 22:29:11
  * @LastEditors: henggao
- * @LastEditTime: 2021-08-12 10:22:30
+ * @LastEditTime: 2021-08-18 14:44:18
 -->
 <template>
   <div class="data-add">
@@ -541,7 +541,7 @@ export default {
       },
       // 源文件参数
       fileOptions: {
-        browse_button: "FileChose",
+        browse_button: "FileChose", //触发文件选择对话框的按钮，为那个元素id
         // url: "http://127.0.0.1:8000/load/uploadfile/",
         // url: "http://127.0.0.1:8000/seismic/hydrologicalinfo/",
         // url: "http://39.105.175.144:8001",
@@ -922,7 +922,6 @@ export default {
           state.dataForm.dataLeftY = excel_data.左下角Y;
           state.dataForm.dataRightX = excel_data.右下角X;
           state.dataForm.dataRightY = excel_data.右下角Y;
-          state.dataForm.dataRightY = excel_data.右下角Y;
           state.dataForm.dataIntro = excel_data.备注信息;
           // console.log(excel_data.制图日期);
           // console.log(state.dataForm);
@@ -1121,7 +1120,7 @@ export default {
 };
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .data-add {
   padding-bottom: 4em;
   .input-size {

@@ -4,7 +4,7 @@
  * @Author: henggao
  * @Date: 2021-07-17 21:31:46
  * @LastEditors: henggao
- * @LastEditTime: 2021-08-09 17:12:52
+ * @LastEditTime: 2021-08-18 10:03:00
 -->
 <template>
   <div class="data-info">
@@ -879,6 +879,9 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.data-info {
+  padding-bottom: 4em;
+}
 .pdfcontainer {
   width: 520px;
   height: 680px;

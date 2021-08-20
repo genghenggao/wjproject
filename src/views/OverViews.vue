@@ -4,7 +4,7 @@
  * @Author: henggao
  * @Date: 2021-07-12 14:48:03
  * @LastEditors: henggao
- * @LastEditTime: 2021-08-07 15:35:17
+ * @LastEditTime: 2021-08-18 10:00:36
 -->
   
   <template>
@@ -127,6 +127,9 @@ export default {
 
 <style lang="scss">
 //
+.user-list {
+  padding-bottom: 4em;
+}
 
 .main-container .el-main {
   // padding: 0.6em;

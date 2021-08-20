@@ -4,7 +4,7 @@
  * @Author: henggao
  * @Date: 2021-07-11 10:17:33
  * @LastEditors: henggao
- * @LastEditTime: 2021-08-12 10:21:09
+ * @LastEditTime: 2021-08-18 10:02:03
 -->
 <template>
   <div class="data-info">
@@ -817,6 +817,7 @@ export default {
 @import "../assets/css/common.css";
 
 .data-info {
+  padding-bottom: 4em;
   .content-main {
     .table-image {
       width: 45px;

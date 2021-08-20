@@ -4,7 +4,7 @@
  * @Author: henggao
  * @Date: 2021-07-10 16:55:38
  * @LastEditors: henggao
- * @LastEditTime: 2021-08-12 15:11:38
+ * @LastEditTime: 2021-08-20 17:06:18
  */
 import { createRouter, createWebHistory } from "vue-router";
 import NProgress from 'nprogress'
@@ -111,14 +111,6 @@ const routes = [
       //   component: () => import("@/components/ReportList.vue")
       // },
 
-      {
-        path: "/report-add",
-        name: "批量数据入库",
-        icon: "el-icon-folder-opened",
-        meta: { title: "多个数据入库", requireAuth: true, roles: ['true', 'false'] },
-        component: () =>
-          import("@/components/PDFAdd.vue"),
-      },
       // {
       //   path: "/data-add",
       //   name: "数据入库",
@@ -134,6 +126,14 @@ const routes = [
         meta: { title: "文档入库", requireAuth: true, roles: ['true', 'false'] },
         component: () =>
           import("@/components/PDFAdd.vue"),
+      },
+      {
+        path: "/report-add",
+        name: "批量数据入库",
+        icon: "el-icon-folder-opened",
+        meta: { title: "多个数据入库", requireAuth: true, roles: ['true', 'false'] },
+        component: () =>
+          import("@/components/BulkDataAdd.vue"),
       },
     ]
   },
@@ -205,13 +205,13 @@ const routes = [
       //   meta: { title: "用户列表", requireAuth: true },
       //   component: () => import("@/views/UserList.vue")
       // },
-      {
-        path: "/user-setting",
-        name: "个人设置",
-        icon: "el-icon-setting",
-        meta: { title: "个人设置", requireAuth: true, roles: ['true', 'false'] },
-        component: () => import("@/views/UserSetting.vue")
-      },
+      // {
+      //   path: "/user-setting",
+      //   name: "个人设置",
+      //   icon: "el-icon-setting",
+      //   meta: { title: "个人设置", requireAuth: true, roles: ['true', 'false'] },
+      //   component: () => import("@/views/UserSetting.vue")
+      // },
       {
         path: "/user-password",
         name: "修改密码",
@@ -270,7 +270,7 @@ router.beforeEach((to, from, next) => {
     document.title = "默存"
   }
 
-// 页面访问权限判断
+  // 页面访问权限判断
   let userToken = localStorage.getItem('token')
   // let role = localStorage.getItem('role')
   const role = localStorage.is_superuser //获取是否是超级权限

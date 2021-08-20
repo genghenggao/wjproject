@@ -4,7 +4,7 @@
  * @Author: henggao
  * @Date: 2021-07-21 19:43:03
  * @LastEditors: henggao
- * @LastEditTime: 2021-08-12 10:20:28
+ * @LastEditTime: 2021-08-18 10:03:43
 -->
 <template>
   <div class="data-info">
@@ -13,7 +13,7 @@
         <el-page-header
           @back="goBack"
           title="返回"
-          content="数据列表"
+          content="数据下载"
         ></el-page-header>
       </template>
       <div class="content">
@@ -1074,6 +1074,7 @@ export default {
 @import "../assets/css/common.css";
 
 .data-info {
+  padding-bottom: 4em;
   .content-main {
     .table-image {
       width: 45px;

@@ -4,17 +4,18 @@
  * @Author: henggao
  * @Date: 2021-07-11 14:28:51
  * @LastEditors: henggao
- * @LastEditTime: 2021-08-13 08:34:09
+ * @LastEditTime: 2021-08-18 10:04:37
 -->
 <template>
   <div class="user-list">
     <el-card shadow="never">
       <template #header>
         <div class="clearfix">
-          <el-image
+          <!-- <el-image
             class="icon"
             :src="require('@/assets/image/icon/list.png')"
-          />
+          /> -->
+          <i class="el-icon-s-custom"></i>
           <span>用户列表</span>
         </div>
       </template>
@@ -27,7 +28,7 @@
                 placeholder="请输入用户信息"
               ></el-input>
             </el-col>
-            <el-col :span="4">
+            <el-col :span="10">
               <el-button type="danger" @click="searchUser">搜索</el-button>
               <!-- <el-button type="danger" @click="init">添加用户</el-button> -->
               <el-button type="success" @click="resetList">重置</el-button>
@@ -727,6 +728,7 @@ export default {
 <style lang="scss">
 @import "../assets/css/common.css";
 
-// .user-list {
-// }
+.user-list {
+  padding-bottom: 4em;
+}
 </style>
