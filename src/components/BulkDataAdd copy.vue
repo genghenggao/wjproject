@@ -4,7 +4,7 @@
  * @Author: henggao
  * @Date: 2021-08-16 09:58:13
  * @LastEditors: henggao
- * @LastEditTime: 2021-08-24 15:55:04
+ * @LastEditTime: 2021-08-24 09:14:49
 -->
 <template>
   <div class="data-add">
@@ -358,43 +358,7 @@ export default {
       console.log("上传成功回调");
       // console.log(proxy);
       // console.log(file);
-      console.log(responseObject);
-      console.log(responseObject.status);
-      // console.log(responseObject.response);
-
-      if (responseObject.status == 200) {
-        // 处理json字符串为数组对象
-        const dataRes = JSON.parse(responseObject.response);
-        console.log(dataRes);
-        if (dataRes.res == 200) {
-          // console.log("存在xlsx");
-          // state.content = dataRes;
-          const datatable = dataRes.data;
-          for (let i = 0; i < datatable.length; i++) {
-            // console.log(i, dataRes[i]);
-            state.content.push({
-              dataName: datatable[i]["文件名称"],
-              dataFormat: datatable[i]["原始格式"],
-              dataNumber: datatable[i]["档案号"],
-              dataCompany: datatable[i]["制图单位"],
-              dataMaker: datatable[i]["拟编人员"],
-              dataAdmin: datatable[i]["入库人员"],
-              dataStorageCompany: datatable[i]["入库单位"],
-              carouselImgName: datatable[i]["附属文件"],
-              fileListName: datatable[i]["源文件"],
-            });
-          }
-        } else if (dataRes.res == 500) {
-          // console.log("上传文件信息.xlsx中附属图和源文件不存在");
-          ElMessage.error("上传文件信息.xlsx中，附属图或源文件部分不存在！");
-        } else {
-          // console.log("不存在xlsx");
-          ElMessage.error("zip文件中不存在上传文件信息.xlsx！");
-        }
-      } else {
-        console.log("错误");
-      }
-
+      // console.log(responseObject);
       // state.resSuccess = responseObject;
       state.dataForm.fileList = state.dataForm.fileList.map((val, ind) => {
         if (val.id == file.id) {
@@ -407,7 +371,7 @@ export default {
         }
         return val;
       });
-      // webSocket();
+      webSocket();
     };
     //取消上传回调
     const removeSourceFile = (id) => {

@@ -4,7 +4,7 @@
  * @Author: henggao
  * @Date: 2021-07-12 19:53:39
  * @LastEditors: henggao
- * @LastEditTime: 2021-07-13 18:58:09
+ * @LastEditTime: 2021-08-20 19:18:37
 -->
 <template>
   <div class="user-password">
@@ -106,6 +106,9 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.user-password {
+  padding-bottom: 4em;
+}
 // 标题居中
 :deep .el-card__header {
   text-align: center !important;

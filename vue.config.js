@@ -4,7 +4,7 @@
  * @Author: henggao
  * @Date: 2021-07-10 17:00:23
  * @LastEditors: henggao
- * @LastEditTime: 2021-07-27 19:32:06
+ * @LastEditTime: 2021-08-23 23:21:17
  */
 const path = require('path')
 const webpack = require('webpack')
@@ -93,15 +93,25 @@ module.exports = {
       errors: false
     },
     proxy: {
+      // 普通http请求
       '/api': {
         // 目标 API 地址
         target: 'http://127.0.0.1:8000/api',//这里后台的地址模拟的;应该填写你们真实的后台接口
         // target: 'http://39.105.175.144:8001/api',//这里后台的地址模拟的;应该填写你们真实的后台接口
         // 如果要代理 websockets
-        ws: true,
+        // ws: true,
         changeOrigin: true, // 允许websockets跨域
         pathRewrite: {
           '/api': ''
+        }
+      },
+      // websocket请求配置 
+      '/ws': {
+        target: 'http://127.0.0.1:8000/ws',// 可以写http或者ws开头      
+        ws: true,// 如果要代理 websockets
+        changeOrigin: true, // 允许websockets跨域
+        pathRewrite: {
+          '^/ws': ''
         }
       },
     },

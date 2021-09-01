@@ -4,7 +4,7 @@
  * @Author: henggao
  * @Date: 2021-07-11 14:31:11
  * @LastEditors: henggao
- * @LastEditTime: 2021-08-10 10:22:46
+ * @LastEditTime: 2021-08-20 19:20:08
 -->
 <template>
   <div class="user-password">
@@ -16,7 +16,7 @@
             :src="require('@/assets/image/icon/list.png')"
           /> -->
           <i class="el-icon-s-custom"></i>
-          <span>  修改密码</span>
+          <span> 修改密码</span>
         </div>
       </template>
       <div class="content">
@@ -165,6 +165,7 @@ export default {
 @import "../assets/css/common.css";
 
 .user-password {
+  padding-bottom: 4em;
   .content {
     .input-size {
       width: 40em;

@@ -4,7 +4,7 @@
  * @Author: henggao
  * @Date: 2021-07-11 14:54:54
  * @LastEditors: henggao
- * @LastEditTime: 2021-08-12 18:33:51
+ * @LastEditTime: 2021-08-31 22:10:55
 -->
 <template>
   <div class="login" :style="login">
@@ -27,7 +27,8 @@
       <el-col :span="12">
         <div class="login_content" style="height: 100%; width: 100%">
           <el-row :gutter="10" class="login-header">
-            <p>武甲图纸管理系统</p>
+            <!-- <p>武甲图纸管理系统</p> -->
+            <p>不忘初心G</p>
           </el-row>
           <el-row :gutter="10" class="login-container">
             <el-form
@@ -84,13 +85,29 @@
             </el-form>
           </el-row>
           <el-row :gutter="10" class="login-footer">
-            <p>版权所有：阳泰集团武甲煤矿&nbsp;</p>
+            <!-- <p>版权所有：阳泰集团武甲煤矿&nbsp;</p> -->
+            <p>版权所有：genghenggao&nbsp;</p>
+            <div style="width: 300px; margin: 0 auto; padding: 0px 0">
+              <a
+                target="_blank"
+                href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=11010802035852"
+                style="
+                  display: inline-block;
+                  text-decoration: none;
+                  height: 20px;
+                  line-height: 20px;
+                "
+                ><img src="../assets/image/备案图标.png" style="float: left" />
+                <p>京公网安备 11010802035852号</p></a
+              >
+            </div>
             <p>
               ICP备案：<a href="https://beian.miit.gov.cn/" target="_self"
                 >京ICP备2021024216号</a
               >
             </p>
-            <p>公司地址：晋城阳城县芹池镇武甲村</p>
+            <p>个人地址：北京市海淀区学院路丁11号</p>
+            <!-- <p>公司地址：晋城阳城县芹池镇武甲村</p> -->
           </el-row>
         </div>
       </el-col>
